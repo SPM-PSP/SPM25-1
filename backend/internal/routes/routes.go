@@ -2,6 +2,7 @@ package routes
 
 import (
 	"UnoBackend/DB"
+	"UnoBackend/internal/handler"
 	"UnoBackend/internal/middle"
 	"UnoBackend/internal/model"
 	"github.com/gin-gonic/gin"
@@ -46,6 +47,16 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, _ := middleware.GenerateToken(user.Username)
+	token, _ := middle.GenerateToken(user.Username)
 	c.JSON(http.StatusOK, gin.H{"token": token})
+}
+
+func RegisterRoutes(router *gin.Engine, chatHandler *handler.ChatHandler) {
+	router.Use(middle.CORS())
+
+	api := router.Group("/deepseek")
+	{
+		api.POST("/sessions", chatHandler.CreateSession)
+		api.POST("/chat", chatHandler.HandleChat)
+	}
 }
