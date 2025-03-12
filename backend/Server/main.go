@@ -1,6 +1,7 @@
 package main
 
 import (
+	"UnoBackend/DB"
 	"UnoBackend/internal/middle"
 	"UnoBackend/internal/routes"
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,7 @@ import (
 
 func main() {
 	r := gin.Default()
-	database.InitDB()
+	DB.InitDB()
 
 	// 用户认证相关
 	r.POST("/register", routes.Register)
