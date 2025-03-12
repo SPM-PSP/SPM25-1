@@ -1,37 +1,28 @@
 package main
 
 import (
+	"UnoBackend/internal/middle"
+	"UnoBackend/internal/routes"
 	"github.com/gin-gonic/gin"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 func main() {
-	// 初始化数据库
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-	if err != nil {
-		panic("failed to connect database")
-	}
-	db.AutoMigrate(&User{})
-
 	r := gin.Default()
+	database.InitDB()
 
-	// 认证路由组
-	auth := r.Group("/auth")
-	{
-		auth.POST("/register", registerHandler(db))
-		auth.POST("/login", loginHandler(db))
-	}
+	// 用户认证相关
+	r.POST("/register", routes.Register)
+	r.POST("/login", routes.Login)
 
-	// WebSocket 路由
-	r.GET("/ws", WebSocketHandler)
+	// WebSocket
+	r.GET("/ws", routes.WebSocketHandler)
 
-	// 需要认证的路由组
-	api := r.Group("/api")
-	api.Use(JWTMiddleware())
-	{
-		api.GET("/user/me", getUserHandler)
-	}
+	// 需要 JWT 保护的接口
+	auth := r.Group("/")
+	auth.Use(middleware.JWTAuth())
+	auth.GET("/protected", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "访问成功"})
+	})
 
 	r.Run(":8080")
 }
