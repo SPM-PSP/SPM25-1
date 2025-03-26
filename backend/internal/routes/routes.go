@@ -1,62 +1,57 @@
 package routes
 
 import (
-	"UnoBackend/DB"
 	"UnoBackend/internal/handler"
 	"UnoBackend/internal/middle"
 	"UnoBackend/internal/model"
+	"UnoBackend/internal/service"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 
-func Register(c *gin.Context) {
-	var user model.User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
-		return
-	}
-
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	user.Password = string(hashedPassword)
-
-	if err := DB.DB.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "用户创建失败"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "注册成功"})
-}
-
-func Login(c *gin.Context) {
-	var user model.User
-	var input model.User
-
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
-		return
-	}
-
-	if err := DB.DB.Where("username = ?", input.Username).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户不存在"})
-		return
-	}
-
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "密码错误"})
-		return
-	}
-
-	token, _ := middle.GenerateToken(user.Username)
-	c.JSON(http.StatusOK, gin.H{"token": token})
-}
-
-func RegisterRoutes(router *gin.Engine, chatHandler *handler.ChatHandler) {
+func RegisterChatRoutes(router *gin.Engine, chatHandler *handler.ChatHandler) {
 	router.Use(middle.CORS())
-
+	router.Use(middle.JWTAuth())
 	api := router.Group("/deepseek")
 	{
 		api.POST("/sessions", chatHandler.CreateSession)
 		api.POST("/chat", chatHandler.HandleChat)
 	}
+}
+
+func RegisterRegisterRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	api := router.Group("/")
+	{
+		api.POST("/register", handler.Register)
+	}
+}
+
+func RegisterLoginRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	api := router.Group("/")
+	{
+		api.POST("/login", handler.Login)
+	}
+}
+
+func RegisterUnoChatRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	router.Use(middle.JWTAuth())
+	router.GET("/protected", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "访问成功"})
+	})
+	router.POST("/Uno/chat", func(c *gin.Context) {
+		messages := []model.ChatMessage{
+			{Role: "user", Content: "你好！现在我需要你扮演猫娘来和我进行对话，具体表现为句末带上‘喵～’字样并且语言风格偏向可爱。"},
+		}
+
+		response, err := service.GetDeepSeekChatCompletion(messages)
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			return
+		}
+		c.JSON(200, gin.H{"message": response})
+		fmt.Println("Assistant:", response)
+	})
 }
