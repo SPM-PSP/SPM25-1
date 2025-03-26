@@ -1,4 +1,4 @@
-package domain
+package service
 
 import (
 	"UnoBackend/internal/model"
