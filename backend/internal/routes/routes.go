@@ -3,7 +3,7 @@ package routes
 import (
 	"UnoBackend/internal/handler"
 	"UnoBackend/internal/middle"
-	"UnoBackend/internal/model"
+	"UnoBackend/internal/model/deepseek"
 	"UnoBackend/internal/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -42,7 +42,7 @@ func RegisterUnoChatRoutes(router *gin.Engine) {
 		c.JSON(200, gin.H{"message": "访问成功"})
 	})
 	router.POST("/Uno/chat", func(c *gin.Context) {
-		messages := []model.ChatMessage{
+		messages := []deepseek.ChatMessage{
 			{Role: "user", Content: "你好！现在我需要你扮演猫娘来和我进行对话，具体表现为句末带上‘喵～’字样并且语言风格偏向可爱。"},
 		}
 

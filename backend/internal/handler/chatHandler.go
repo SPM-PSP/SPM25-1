@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"UnoBackend/internal/model/deepseek"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -8,13 +9,11 @@ import (
 	"net/http"
 	"sync"
 	"time"
-
-	"UnoBackend/internal/model"
 )
 
 type SessionStore struct {
 	sync.RWMutex
-	sessions map[string]*model.ChatSession
+	sessions map[string]*deepseek.ChatSession
 }
 
 type ChatHandler struct {
@@ -28,13 +27,13 @@ func NewChatHandler(apiKey string, timeout time.Duration) *ChatHandler {
 		apiKey:     apiKey,
 		apiTimeout: timeout,
 		store: &SessionStore{
-			sessions: make(map[string]*model.ChatSession),
+			sessions: make(map[string]*deepseek.ChatSession),
 		},
 	}
 }
 
 func (h *ChatHandler) CreateSession(c *gin.Context) {
-	session := model.NewSession()
+	session := deepseek.NewSession()
 
 	h.store.Lock()
 	h.store.sessions[session.ID] = session
@@ -68,7 +67,7 @@ func (h *ChatHandler) HandleChat(c *gin.Context) {
 	}
 
 	// Add user message
-	session.Messages = append(session.Messages, model.ChatMessage{
+	session.Messages = append(session.Messages, deepseek.ChatMessage{
 		Role:    "user",
 		Content: req.Message,
 	})
@@ -81,7 +80,7 @@ func (h *ChatHandler) HandleChat(c *gin.Context) {
 	}
 
 	// Add assistant response
-	session.Messages = append(session.Messages, model.ChatMessage{
+	session.Messages = append(session.Messages, deepseek.ChatMessage{
 		Role:    "assistant",
 		Content: response,
 	})
@@ -93,10 +92,10 @@ func (h *ChatHandler) HandleChat(c *gin.Context) {
 	})
 }
 
-func (h *ChatHandler) callDeepSeekAPI(messages []model.ChatMessage) (string, error) {
+func (h *ChatHandler) callDeepSeekAPI(messages []deepseek.ChatMessage) (string, error) {
 	client := &http.Client{Timeout: h.apiTimeout}
 
-	reqBody := model.ChatCompletionRequest{
+	reqBody := deepseek.ChatCompletionRequest{
 		Model:     "deepseek-chat",
 		Messages:  messages,
 		MaxTokens: 500,
@@ -118,7 +117,7 @@ func (h *ChatHandler) callDeepSeekAPI(messages []model.ChatMessage) (string, err
 		return "", fmt.Errorf("API returned %d status", resp.StatusCode)
 	}
 
-	var apiResp model.ChatCompletionResponse
+	var apiResp deepseek.ChatCompletionResponse
 	if err := json.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
 		return "", fmt.Errorf("failed to decode response: %w", err)
 	}

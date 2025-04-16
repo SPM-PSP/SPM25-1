@@ -1,4 +1,4 @@
-package model
+package deepseek
 
 import (
 	"github.com/google/uuid"

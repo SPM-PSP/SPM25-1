@@ -1,7 +1,7 @@
 package service
 
 import (
-	"UnoBackend/internal/model"
+	"UnoBackend/internal/model/Uno"
 	"fmt"
 	"strconv"
 	"sync"
@@ -11,12 +11,12 @@ var (
 	rooms sync.Map // 全局房间存储
 )
 
-func CreateRoom(creatorID string) *model.Room {
-	roomID := model.NewRoom()
-	Waiting := model.Waiting
-	newRoom := &model.Room{
+func CreateRoom(creatorID string) *Uno.Room {
+	roomID := Uno.NewRoom()
+	Waiting := Uno.Waiting
+	newRoom := &Uno.Room{
 		ID:      roomID.ID,
-		Players: []*model.Player{{ID: creatorID}},
+		Players: []*Uno.Player{{ID: creatorID}},
 		Deck:    initializeDeck(),
 		Status:  Waiting,
 		Creator: creatorID,
@@ -25,25 +25,25 @@ func CreateRoom(creatorID string) *model.Room {
 	return newRoom
 }
 
-func GetRoom(roomID string) (*model.Room, bool) {
+func GetRoom(roomID string) (*Uno.Room, bool) {
 	val, ok := rooms.Load(roomID)
 	if !ok {
 		return nil, false
 	}
-	return val.(*model.Room), true
+	return val.(*Uno.Room), true
 }
 
 // 初始化UNO牌堆
-func initializeDeck() []model.Card {
+func initializeDeck() []Uno.Card {
 	// 实现108张牌的生成逻辑
-	var deck []model.Card
-	colors := []model.Color{model.Red, model.Blue, model.Green, model.Yellow}
+	var deck []Uno.Card
+	colors := []Uno.Color{Uno.Red, Uno.Blue, Uno.Green, Uno.Yellow}
 
 	// 生成彩色卡牌（数字牌和功能牌）
 	for _, color := range colors {
 		// 数字牌（0-9）
 		// 数字0每个颜色1张
-		deck = append(deck, model.Card{
+		deck = append(deck, Uno.Card{
 			Type:  "number",
 			Color: color,
 			Value: "0",
@@ -52,12 +52,12 @@ func initializeDeck() []model.Card {
 		// 数字1-9每个颜色2张
 		for num := 1; num <= 9; num++ {
 			value := strconv.Itoa(num)
-			deck = append(deck, model.Card{
+			deck = append(deck, Uno.Card{
 				Type:  "number",
 				Color: color,
 				Value: value,
 			})
-			deck = append(deck, model.Card{
+			deck = append(deck, Uno.Card{
 				Type:  "number",
 				Color: color,
 				Value: value,
@@ -76,7 +76,7 @@ func initializeDeck() []model.Card {
 
 		for _, action := range actions {
 			for i := 0; i < 2; i++ {
-				deck = append(deck, model.Card{
+				deck = append(deck, Uno.Card{
 					Type:  action.cardType,
 					Color: color,
 					Value: action.value,
@@ -96,7 +96,7 @@ func initializeDeck() []model.Card {
 
 	for _, wild := range wildCards {
 		for i := 0; i < 4; i++ {
-			deck = append(deck, model.Card{
+			deck = append(deck, Uno.Card{
 				Type:  wild.cardType,
 				Color: "", // 万能牌没有颜色
 				Value: wild.value,

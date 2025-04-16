@@ -1,6 +1,8 @@
-package model
+package Uno
 
-import "github.com/gorilla/websocket"
+import (
+	"github.com/gorilla/websocket"
+)
 
 type Player struct {
 	ID   string          `json:"id"`

@@ -1,6 +1,8 @@
-package model
+package deepseek
 
-import "time"
+import (
+	"time"
+)
 
 type ChatSession struct {
 	ID         string        `json:"id"`

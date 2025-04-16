@@ -1,4 +1,4 @@
-package model
+package Uno
 
 import (
 	"github.com/google/uuid"
@@ -23,6 +23,7 @@ type Room struct {
 	Status             RoomStatus    `json:"status"`
 	Creator            string        `json:"creator"` // 房主ID
 	Direction          roomDirection `json:"direction"`
+	DrawCount          int           `json:"drawCount"`
 }
 
 func NewRoom() *Room {

@@ -1,7 +1,7 @@
 package service
 
 import (
-	"UnoBackend/internal/model"
+	"UnoBackend/internal/model/deepseek"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -14,8 +14,8 @@ const (
 	modelName = "deepseek-chat"                       // 根据实际模型名称修改
 )
 
-func GetDeepSeekChatCompletion(messages []model.ChatMessage) (string, error) {
-	requestBody := model.ChatCompletionRequest{
+func GetDeepSeekChatCompletion(messages []deepseek.ChatMessage) (string, error) {
+	requestBody := deepseek.ChatCompletionRequest{
 		Model:       modelName,
 		Messages:    messages,
 		MaxTokens:   500,
@@ -46,7 +46,7 @@ func GetDeepSeekChatCompletion(messages []model.ChatMessage) (string, error) {
 		return "", fmt.Errorf("API returned non-200 status: %d", resp.StatusCode)
 	}
 
-	var response model.ChatCompletionResponse
+	var response deepseek.ChatCompletionResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return "", fmt.Errorf("decode response failed: %v", err)
 	}

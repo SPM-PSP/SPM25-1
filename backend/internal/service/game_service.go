@@ -1,12 +1,12 @@
 package service
 
 import (
-	"UnoBackend/internal/model"
+	"UnoBackend/internal/model/Uno"
 	"math/rand"
 	"time"
 )
 
-func ValidateCardPlay(room *model.Room, playerIndex int, card model.Card) bool {
+func ValidateCardPlay(room *Uno.Room, playerIndex int, card Uno.Card) bool {
 	topCard := room.DiscardPile[len(room.DiscardPile)-1]
 
 	// 万能牌始终合法
@@ -18,34 +18,32 @@ func ValidateCardPlay(room *model.Room, playerIndex int, card model.Card) bool {
 	return card.Color == topCard.Color || card.Value == topCard.Value
 }
 
-func HandleSpecialCard(room *model.Room, card model.Card) {
+func HandleSpecialCard(room *Uno.Room, card Uno.Card, choose string) {
 	switch card.Type {
 	case "reverse":
 		reversePlayerOrder(room)
-	case "draw_two":
-		nextPlayer := getNextPlayer(room)
-		//下家有+2、+4
-
-		//下家接受摸牌
-		err := drawCards(nextPlayer, 2, room)
-		if err != nil {
-			return
+		room.DiscardPile = append(room.DiscardPile, card)
+	case "draw_two", "draw_four":
+		//计算抽牌累计
+		if card.Type == "draw_two" {
+			room.DrawCount += 2
+		} else if card.Type == "draw_four" {
+			room.DrawCount += 4
 		}
-		// ...处理其他特殊牌
-	case "draw_four":
-		nextPlayer := getNextPlayer(room)
-		//下家有+4
-
-		//下家选择摸牌
-		err := drawCards(nextPlayer, 4, room)
-		if err != nil {
-			return
+		room.DiscardPile = append(room.DiscardPile, card)
+		//自己接受摸牌
+		if choose == "accept" {
+			err := drawCards(room.Players[room.CurrentPlayerIndex], room.DrawCount, room)
+			room.DrawCount = 0
+			if err != nil {
+				return
+			}
 		}
 	}
 }
 
 // 摸牌逻辑
-func drawCards(player *model.Player, num int, room *model.Room) error {
+func drawCards(player *Uno.Player, num int, room *Uno.Room) error {
 	if len(room.Deck) < num {
 		reshuffleDiscardPile(room)
 	}
@@ -58,15 +56,15 @@ func drawCards(player *model.Player, num int, room *model.Room) error {
 }
 
 // 弃牌堆重洗
-func reshuffleDiscardPile(room *model.Room) {
+func reshuffleDiscardPile(room *Uno.Room) {
 	// 保留最后一张弃牌作为起点
 	newDeck := room.DiscardPile[:len(room.DiscardPile)-1]
 	room.Deck = shuffle(newDeck)
-	room.DiscardPile = []model.Card{room.DiscardPile[len(room.DiscardPile)-1]}
+	room.DiscardPile = []Uno.Card{room.DiscardPile[len(room.DiscardPile)-1]}
 }
 
 // 洗牌
-func shuffle(deck []model.Card) []model.Card {
+func shuffle(deck []Uno.Card) []Uno.Card {
 	rand.Seed(time.Now().UnixNano()) // 设置随机种子
 	rand.Shuffle(len(deck), func(i, j int) {
 		deck[i], deck[j] = deck[j], deck[i] // 交换元素
@@ -75,8 +73,8 @@ func shuffle(deck []model.Card) []model.Card {
 }
 
 // 下家
-func getNextPlayer(room *model.Room) *model.Player {
-	if room.Direction == model.Clockwise {
+func getNextPlayer(room *Uno.Room) *Uno.Player {
+	if room.Direction == Uno.Clockwise {
 		return room.Players[(room.CurrentPlayerIndex+1)%len(room.Players)]
 	} else {
 		index := room.CurrentPlayerIndex - 1
@@ -89,11 +87,11 @@ func getNextPlayer(room *model.Room) *model.Player {
 }
 
 // 反转
-func reversePlayerOrder(room *model.Room) {
-	if room.Direction == model.Clockwise {
-		room.Direction = model.Anticlockwise
+func reversePlayerOrder(room *Uno.Room) {
+	if room.Direction == Uno.Clockwise {
+		room.Direction = Uno.Anticlockwise
 	} else {
-		room.Direction = model.Clockwise
+		room.Direction = Uno.Clockwise
 	}
 }
 

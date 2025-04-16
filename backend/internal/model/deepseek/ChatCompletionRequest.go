@@ -1,4 +1,4 @@
-package model
+package deepseek
 
 type ChatCompletionRequest struct {
 	Model       string        `json:"model"`

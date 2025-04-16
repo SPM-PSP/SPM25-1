@@ -1,4 +1,4 @@
-package model
+package Uno
 
 type Color string
 

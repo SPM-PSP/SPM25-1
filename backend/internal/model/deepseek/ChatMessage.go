@@ -1,4 +1,4 @@
-package model
+package deepseek
 
 type ChatMessage struct {
 	Role    string `json:"role"`
