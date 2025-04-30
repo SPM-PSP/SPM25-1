@@ -2,7 +2,10 @@ package handler
 
 import (
 	"UnoBackend/DB"
+	"UnoBackend/config"
 	"UnoBackend/internal/model/suop"
+	"UnoBackend/internal/service"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -58,4 +61,41 @@ func DeleteSuop(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "删除成功"})
+}
+
+func GetSuop(c *gin.Context) {
+	id := c.Param("id")
+	var suopData suop.Suop
+	if err := DB.DB.Find(&suopData, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "汤面未找到"})
+		return
+	}
+	c.JSON(http.StatusOK, suopData)
+}
+
+func StartSuop(c *gin.Context) {
+	type startSRequest struct {
+		RoomID string `json:"room_id"`
+		SuopID int    `json:"suop_id"`
+	}
+	var req startSRequest
+	var suopData suop.Suop
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求格式"})
+		return
+	}
+	fmt.Println("ROOMID:" + req.RoomID)
+	room, _ := service.GetRoom(req.RoomID)
+	if room == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "房间未找到"})
+		return
+	}
+	if err := DB.DB.Find(&suopData, req.SuopID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "汤面未找到"})
+		return
+	}
+	cfg := config.Load()
+	service.StartSuopGame(room, req.SuopID, service.NewChatHandler("sk-09e51faee39f4a9a9358dbd732868b1f",
+		cfg.APITimeout))
+	c.JSON(http.StatusOK, room)
 }

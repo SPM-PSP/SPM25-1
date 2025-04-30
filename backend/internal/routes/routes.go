@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterChatRoutes(router *gin.Engine, chatHandler *handler.ChatHandler) {
+func RegisterChatRoutes(router *gin.Engine, chatHandler *service.ChatHandler) {
 	router.Use(middle.CORS())
 	router.Use(middle.JWTAuth())
 	api := router.Group("/deepseek")
@@ -98,5 +98,23 @@ func CreateRoomRoutes(router *gin.Engine) {
 	api := router.Group("/")
 	{
 		api.POST("/createRoom", handler.CreateRoomHandler)
+	}
+}
+
+func StartUnoRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	router.Use(middle.JWTAuth())
+	api := router.Group("/")
+	{
+		api.POST("/StartUno", handler.StartUno)
+	}
+}
+
+func StartSuopRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	router.Use(middle.JWTAuth())
+	api := router.Group("/")
+	{
+		api.POST("/StartSuop", handler.StartSuop)
 	}
 }

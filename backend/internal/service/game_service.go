@@ -1,7 +1,10 @@
 package service
 
 import (
+	"UnoBackend/DB"
 	"UnoBackend/internal/model/Uno"
+	"UnoBackend/internal/model/suop"
+	"fmt"
 	"math/rand"
 	"time"
 )
@@ -93,6 +96,42 @@ func reversePlayerOrder(room *Uno.Room) {
 	} else {
 		room.Direction = Uno.Clockwise
 	}
+}
+
+func StartUnoGame(room *Uno.Room) {
+	for i := range room.Players {
+		drawCards(room.Players[i], 4, room)
+	}
+	room.Status = Uno.Playing
+	room.Direction = Uno.Clockwise
+}
+
+func StartSuopGame(room *Uno.Room, id int, handler *ChatHandler) {
+	var suopData suop.Suop
+	if err := DB.DB.Find(&suopData, id).Error; err != nil {
+		fmt.Println("error: 汤面未找到")
+		return
+	}
+
+	// 创建会话
+	session := handler.NewASession()
+
+	// 构造自定义对话内容，例如从 suopData 生成一个问题
+	message := fmt.Sprintf("现在你是海龟汤推理游戏的主持人，你要根据我接下来的提问与汤底进行比对，你只能回答是,不是,不重要,可能；四种回答，以下是汤底：%s", suopData.Content)
+
+	// 调用对话接口
+	response, err := handler.SendAMessage(session, message)
+	if err != nil {
+		fmt.Println("调用 AI 接口出错:", err)
+		return
+	}
+
+	fmt.Println("AI 回复：", response)
+	room.Status = Uno.Playing
+	room.Message = response
+	room.Session = session.ID
+	// 如果你需要将 response 存储到 room 中，可加上：
+	// room.SomeField = response
 }
 
 func absInt(num int) int {
