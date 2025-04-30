@@ -24,6 +24,8 @@ type Room struct {
 	Creator            string        `json:"creator"` // 房主ID
 	Direction          roomDirection `json:"direction"`
 	DrawCount          int           `json:"drawCount"`
+	Message            string        `json:"message"`
+	Session            string        `json:"session"`
 }
 
 func NewRoom() *Room {

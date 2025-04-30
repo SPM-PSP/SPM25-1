@@ -3,8 +3,8 @@ package main
 import (
 	"UnoBackend/DB"
 	"UnoBackend/config"
-	"UnoBackend/internal/handler"
 	"UnoBackend/internal/routes"
+	"UnoBackend/internal/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +13,7 @@ func main() {
 
 	cfg := config.Load()
 	fmt.Println("Assistant:", cfg.DeepSeekAPIKey)
-	chatHandler := handler.NewChatHandler(
+	chatHandler := service.NewChatHandler(
 		"sk-09e51faee39f4a9a9358dbd732868b1f",
 		cfg.APITimeout,
 	)
@@ -29,6 +29,8 @@ func main() {
 	routes.CreateRoomRoutes(r)
 	routes.JoinRoomRoutes(r)
 	routes.GetRoomByIdRoutes(r)
+	routes.StartSuopRoutes(r)
+	routes.StartUnoRoutes(r)
 	//test
 	//newRoom := service.CreateRoom("niumo")
 	//fmt.Println("New room:", newRoom)

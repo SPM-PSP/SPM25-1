@@ -1,4 +1,4 @@
-package handler
+package service
 
 import (
 	"UnoBackend/internal/model/deepseek"
@@ -131,4 +131,32 @@ func (h *ChatHandler) callDeepSeekAPI(messages []deepseek.ChatMessage) (string, 
 	}
 
 	return apiResp.Choices[0].Message.Content, nil
+}
+
+func (h *ChatHandler) NewASession() *deepseek.ChatSession {
+	session := deepseek.NewSession()
+	h.store.Lock()
+	h.store.sessions[session.ID] = session
+	h.store.Unlock()
+	return session
+}
+
+func (h *ChatHandler) SendAMessage(session *deepseek.ChatSession, message string) (string, error) {
+	session.Messages = append(session.Messages, deepseek.ChatMessage{
+		Role:    "user",
+		Content: message,
+	})
+
+	response, err := h.callDeepSeekAPI(session.Messages)
+	if err != nil {
+		return "", err
+	}
+
+	session.Messages = append(session.Messages, deepseek.ChatMessage{
+		Role:    "assistant",
+		Content: response,
+	})
+	session.LastActive = time.Now()
+
+	return response, nil
 }
