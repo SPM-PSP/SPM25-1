@@ -5,7 +5,6 @@ import (
 	"UnoBackend/config"
 	"UnoBackend/internal/handler"
 	"UnoBackend/internal/routes"
-	"UnoBackend/internal/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
 )
@@ -25,9 +24,14 @@ func main() {
 	// 用户认证相关
 	routes.RegisterRegisterRoutes(r)
 	routes.RegisterLoginRoutes(r)
+	routes.GetAllSuopsRoutes(r)
+	routes.CreateSuopRoutes(r)
+	routes.CreateRoomRoutes(r)
+	routes.JoinRoomRoutes(r)
+	routes.GetRoomByIdRoutes(r)
 	//test
-	newRoom := service.CreateRoom("niumo")
-	fmt.Println("New room:", newRoom)
+	//newRoom := service.CreateRoom("niumo")
+	//fmt.Println("New room:", newRoom)
 	// WebSocket
 	r.GET("/ws", routes.WebSocketHandler)
 
