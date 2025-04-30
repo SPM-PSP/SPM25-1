@@ -55,3 +55,48 @@ func RegisterUnoChatRoutes(router *gin.Engine) {
 		fmt.Println("Assistant:", response)
 	})
 }
+
+func JoinRoomRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	router.Use(middle.JWTAuth())
+	api := router.Group("/")
+	{
+		api.POST("/joinRoom", handler.JoinRoomHandler)
+	}
+}
+
+func GetAllSuopsRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	router.Use(middle.JWTAuth())
+	api := router.Group("/")
+	{
+		api.GET("/getAllSuop", handler.GetAllSuops)
+	}
+}
+
+func GetRoomByIdRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	router.Use(middle.JWTAuth())
+	api := router.Group("/")
+	{
+		api.GET("/getRoomById", handler.GetRoomByIdRoomHandler)
+	}
+}
+
+func CreateSuopRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	router.Use(middle.JWTAuth())
+	api := router.Group("/")
+	{
+		api.POST("/createSuop", handler.CreateSuop)
+	}
+}
+
+func CreateRoomRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	router.Use(middle.JWTAuth())
+	api := router.Group("/")
+	{
+		api.POST("/createRoom", handler.CreateRoomHandler)
+	}
+}

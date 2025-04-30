@@ -11,11 +11,11 @@ var (
 	rooms sync.Map // 全局房间存储
 )
 
-func CreateRoom(creatorID string) *Uno.Room {
-	roomID := Uno.NewRoom()
+func CreateRoom(creatorID string, roomId string) *Uno.Room {
+	roomID := roomId
 	Waiting := Uno.Waiting
 	newRoom := &Uno.Room{
-		ID:      roomID.ID,
+		ID:      roomId,
 		Players: []*Uno.Player{{ID: creatorID}},
 		Deck:    initializeDeck(),
 		Status:  Waiting,
