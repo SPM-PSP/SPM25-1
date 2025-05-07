@@ -57,11 +57,10 @@ func RegisterUnoChatRoutes(router *gin.Engine) {
 }
 
 func JoinRoomRoutes(router *gin.Engine) {
-	router.Use(middle.CORS())
-	router.Use(middle.JWTAuth())
-	api := router.Group("/")
+	api := router.Group("/ws")
 	{
 		api.POST("/joinRoom", handler.JoinRoomHandler)
+		api.GET("/joinRoom", handler.WsHandler)
 	}
 }
 

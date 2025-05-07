@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"UnoBackend/internal/model"
 	"UnoBackend/internal/model/Uno"
 	"UnoBackend/internal/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
+	"log"
 	"net/http"
 )
 
@@ -42,6 +45,52 @@ func GetRoomByIdRoomHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, room)
 
+}
+
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool { return true },
+}
+
+func WsHandler(c *gin.Context) {
+	roomId := c.Query("roomId")
+	playerId := c.Query("playerId")
+	if roomId == "" || playerId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "缺少 roomId 或 playerId"})
+		return
+	}
+	// 升级 HTTP 为 WebSocket
+	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		log.Println("Upgrade error:", err)
+		return
+	}
+	defer conn.Close()
+	// 获取或创建房间，将连接加入
+	room, _ := service.GetRoom(roomId)
+	service.AddClient(room, conn)
+	// 广播“有人加入”系统消息
+	service.BroadcastMsg(room, model.Message{
+		Type: "system",
+		Data: fmt.Sprintf("玩家 %s 加入了房间", playerId),
+	})
+
+	// 持续读取该连接的消息
+	for {
+		var msg model.Message
+		if err := conn.ReadJSON(&msg); err != nil {
+			log.Println("Read error:", err)
+			break
+		}
+		// 收到消息后直接广播给同房间的所有客户端
+		service.BroadcastMsg(room, msg)
+	}
+
+	// 连接中断，移除并广播离线消息
+	service.RemoveClient(room, conn)
+	service.BroadcastMsg(room, model.Message{
+		Type: "system",
+		Data: fmt.Sprintf("玩家 %s 离开了房间", playerId),
+	})
 }
 
 func JoinRoomHandler(c *gin.Context) {

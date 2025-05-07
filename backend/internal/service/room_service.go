@@ -1,8 +1,11 @@
 package service
 
 import (
+	"UnoBackend/internal/model"
 	"UnoBackend/internal/model/Uno"
 	"fmt"
+	"github.com/gorilla/websocket"
+	"log"
 	"strconv"
 	"sync"
 )
@@ -20,6 +23,7 @@ func CreateRoom(creatorID string, roomId string) *Uno.Room {
 		Deck:    initializeDeck(),
 		Status:  Waiting,
 		Creator: creatorID,
+		Clients: make(map[*websocket.Conn]bool),
 	}
 	rooms.Store(roomID, newRoom)
 	return newRoom
@@ -31,6 +35,50 @@ func GetRoom(roomID string) (*Uno.Room, bool) {
 		return nil, false
 	}
 	return val.(*Uno.Room), true
+}
+
+func BroadcastToClients(roomID string) {
+	room, _ := GetRoom(roomID)
+	room.Mutex.Lock()
+	defer room.Mutex.Unlock()
+
+	for conn := range room.Clients {
+		err := conn.WriteJSON(room)
+		if err != nil {
+			log.Println("Broadcast error:", err)
+			err := conn.Close()
+			if err != nil {
+				return
+			}
+			delete(room.Clients, conn)
+		}
+	}
+}
+
+func BroadcastMsg(room *Uno.Room, msg model.Message) {
+	room.Mutex.Lock()
+	defer room.Mutex.Unlock()
+
+	for conn := range room.Clients {
+		if err := conn.WriteJSON(msg); err != nil {
+			log.Println("Broadcast error:", err)
+			conn.Close()
+			delete(room.Clients, conn)
+		}
+	}
+}
+
+func AddClient(room *Uno.Room, conn *websocket.Conn) {
+	room.Mutex.Lock()
+	defer room.Mutex.Unlock()
+	room.Clients[conn] = true
+}
+
+func RemoveClient(room *Uno.Room, conn *websocket.Conn) {
+	room.Mutex.Lock()
+	defer room.Mutex.Unlock()
+	delete(room.Clients, conn)
+	conn.Close()
 }
 
 // 初始化UNO牌堆

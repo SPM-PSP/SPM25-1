@@ -104,6 +104,7 @@ func StartUnoGame(room *Uno.Room) {
 	}
 	room.Status = Uno.Playing
 	room.Direction = Uno.Clockwise
+
 }
 
 func StartSuopGame(room *Uno.Room, id int, handler *ChatHandler) {

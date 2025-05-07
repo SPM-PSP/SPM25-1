@@ -31,11 +31,12 @@ func main() {
 	routes.GetRoomByIdRoutes(r)
 	routes.StartSuopRoutes(r)
 	routes.StartUnoRoutes(r)
+	routes.JoinRoomRoutes(r)
 	//test
 	//newRoom := service.CreateRoom("niumo")
 	//fmt.Println("New room:", newRoom)
 	// WebSocket
-	r.GET("/ws", routes.WebSocketHandler)
+	//r.GET("/ws", routes.WebSocketHandler)
 
 	// 需要 JWT 保护的接口
 	routes.RegisterUnoChatRoutes(r)
