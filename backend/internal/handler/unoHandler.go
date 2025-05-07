@@ -23,5 +23,6 @@ func StartUno(c *gin.Context) {
 		return
 	}
 	service.StartUnoGame(room)
+	service.BroadcastToClients(req.RoomID)
 	c.JSON(http.StatusOK, room)
 }
