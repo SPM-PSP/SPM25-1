@@ -117,3 +117,12 @@ func StartSuopRoutes(router *gin.Engine) {
 		api.POST("/StartSuop", handler.StartSuop)
 	}
 }
+
+func ValidateCardPlayRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
+	api := router.Group("/Uno")
+	{
+		api.POST("/checkCard", handler.ValidateCardPlayHandler)
+		api.POST("/handleSpecial", handler.HandleSpecialCardHandler)
+	}
+}
