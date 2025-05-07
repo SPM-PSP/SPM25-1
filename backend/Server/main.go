@@ -22,15 +22,16 @@ func main() {
 
 	DB.InitDB()
 	// 用户认证相关
+	routes.JoinRoomRoutes(r)
 	routes.RegisterRegisterRoutes(r)
 	routes.RegisterLoginRoutes(r)
 	routes.GetAllSuopsRoutes(r)
 	routes.CreateSuopRoutes(r)
 	routes.CreateRoomRoutes(r)
-	routes.JoinRoomRoutes(r)
 	routes.GetRoomByIdRoutes(r)
 	routes.StartSuopRoutes(r)
 	routes.StartUnoRoutes(r)
+	routes.ValidateCardPlayRoutes(r)
 	//test
 	//newRoom := service.CreateRoom("niumo")
 	//fmt.Println("New room:", newRoom)

@@ -65,8 +65,12 @@ func WsHandler(c *gin.Context) {
 		return
 	}
 	defer conn.Close()
-	// 获取或创建房间，将连接加入
+	// 获取房间，将连接加入
 	room, _ := service.GetRoom(roomId)
+	if room == nil {
+		conn.WriteMessage(websocket.TextMessage, []byte("未找到房间"))
+		return
+	}
 	service.AddClient(room, conn)
 	// 广播“有人加入”系统消息
 	service.BroadcastMsg(room, model.Message{
