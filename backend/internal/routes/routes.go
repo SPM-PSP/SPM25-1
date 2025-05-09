@@ -7,6 +7,7 @@ import (
 	"UnoBackend/internal/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func RegisterChatRoutes(router *gin.Engine, chatHandler *service.ChatHandler) {
@@ -42,10 +43,19 @@ func RegisterUnoChatRoutes(router *gin.Engine) {
 		c.JSON(200, gin.H{"message": "访问成功"})
 	})
 	router.POST("/Uno/chat", func(c *gin.Context) {
-		messages := []deepseek.ChatMessage{
-			{Role: "user", Content: "你好！现在我需要你扮演猫娘来和我进行对话，具体表现为句末带上‘喵～’字样并且语言风格偏向可爱。"},
+		type Request struct {
+			Content string `json:"content"`
 		}
 
+		var req Request
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求格式"})
+			return
+		}
+		messages := []deepseek.ChatMessage{
+			{Role: "user", Content: fmt.Sprintf("%s", req.Content)},
+		}
+		//"你好！现在我需要你扮演猫娘来和我进行对话，具体表现为句末带上‘喵～’字样并且语言风格偏向可爱。"
 		response, err := service.GetDeepSeekChatCompletion(messages)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
@@ -57,6 +67,7 @@ func RegisterUnoChatRoutes(router *gin.Engine) {
 }
 
 func JoinRoomRoutes(router *gin.Engine) {
+	router.Use(middle.CORS())
 	api := router.Group("/ws")
 	{
 		api.POST("/joinRoom", handler.JoinRoomHandler)
@@ -124,5 +135,6 @@ func ValidateCardPlayRoutes(router *gin.Engine) {
 	{
 		api.POST("/checkCard", handler.ValidateCardPlayHandler)
 		api.POST("/handleSpecial", handler.HandleSpecialCardHandler)
+		api.POST("/draw", handler.DrawCardHandler)
 	}
 }

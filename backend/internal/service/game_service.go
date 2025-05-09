@@ -22,8 +22,9 @@ func ValidateCardPlay(room *Uno.Room, playerIndex int, card Uno.Card) bool {
 }
 
 func HandleSpecialCard(room *Uno.Room, card Uno.Card, choose string) {
+	//自己接受摸牌
 	if choose == "accept" {
-		err := drawCards(room.Players[room.CurrentPlayerIndex], room.DrawCount, room)
+		err := DrawCards(room.Players[room.CurrentPlayerIndex], room.DrawCount, room)
 		room.DrawCount = 0
 		if err != nil {
 			return
@@ -41,13 +42,13 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card, choose string) {
 			room.DrawCount += 4
 		}
 		room.DiscardPile = append(room.DiscardPile, card)
-		//自己接受摸牌
-
+	case "number":
+		room.DiscardPile = append(room.DiscardPile, card)
 	}
 }
 
 // 摸牌逻辑
-func drawCards(player *Uno.Player, num int, room *Uno.Room) error {
+func DrawCards(player *Uno.Player, num int, room *Uno.Room) error {
 	if len(room.Deck) < num {
 		reshuffleDiscardPile(room)
 	}
@@ -101,7 +102,7 @@ func reversePlayerOrder(room *Uno.Room) {
 
 func StartUnoGame(room *Uno.Room) {
 	for i := range room.Players {
-		drawCards(room.Players[i], 4, room)
+		DrawCards(room.Players[i], 4, room)
 	}
 	room.DiscardPile = append(room.DiscardPile, room.Deck[0])
 	room.Status = Uno.Playing

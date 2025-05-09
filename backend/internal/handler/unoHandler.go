@@ -81,3 +81,28 @@ func HandleSpecialCardHandler(c *gin.Context) {
 	service.BroadcastToClients(req.RoomID)
 	c.JSON(http.StatusOK, Response{Message: "Card handled successfully"})
 }
+func DrawCardHandler(c *gin.Context) {
+	type Request struct {
+		RoomID   string `json:"room_id"`
+		PlayerID string `json:"player_id"`
+	}
+
+	var req Request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	room, _ := service.GetRoom(req.RoomID)
+	for _, player := range room.Players {
+		if player.ID == req.PlayerID {
+			err := service.DrawCards(player, 1, room)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "摸牌发生错误"})
+				return
+			}
+			break
+		}
+	}
+	c.JSON(http.StatusOK, room)
+}
