@@ -85,6 +85,7 @@ func DrawCardHandler(c *gin.Context) {
 	type Request struct {
 		RoomID   string `json:"room_id"`
 		PlayerID string `json:"player_id"`
+		Number   int    `json:"number"`
 	}
 
 	var req Request
@@ -96,7 +97,7 @@ func DrawCardHandler(c *gin.Context) {
 	room, _ := service.GetRoom(req.RoomID)
 	for _, player := range room.Players {
 		if player.ID == req.PlayerID {
-			err := service.DrawCards(player, 1, room)
+			err := service.DrawCards(player, req.Number, room)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "摸牌发生错误"})
 				return
