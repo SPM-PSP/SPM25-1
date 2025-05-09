@@ -44,7 +44,11 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card, choose string) {
 		room.DiscardPile = append(room.DiscardPile, card)
 	case "number":
 		room.DiscardPile = append(room.DiscardPile, card)
+	case "skip":
+		room.CurrentPlayerIndex = room.CurrentPlayerIndex%len(room.DiscardPile) + 1
+		room.DiscardPile = append(room.DiscardPile, card)
 	}
+
 }
 
 // 摸牌逻辑
