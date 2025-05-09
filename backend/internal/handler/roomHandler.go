@@ -123,3 +123,45 @@ func JoinRoomHandler(c *gin.Context) {
 		"room":   room.ID,
 	})
 }
+
+func LeaveRoomHandler(c *gin.Context) {
+	type JoinRequest struct {
+		RoomID string     `json:"room_id"`
+		Player Uno.Player `json:"player"`
+	}
+
+	var req JoinRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求格式"})
+		return
+	}
+
+	room, _ := service.GetRoom(req.RoomID)
+	fmt.Println(room.Players)
+	if room == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "房间未找到"})
+		return
+	}
+
+	removed := false
+	newPlayers := make([]*Uno.Player, 0, len(room.Players))
+	for _, p := range room.Players {
+		if p.ID != req.Player.ID {
+			newPlayers = append(newPlayers, p)
+		} else {
+			removed = true
+		}
+	}
+	room.Players = newPlayers
+
+	if !removed {
+		c.JSON(http.StatusNotFound, gin.H{"error": "玩家未在房间中"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "玩家已离开房间",
+		"player":  req.Player.ID,
+		"room":    room.ID,
+	})
+}
