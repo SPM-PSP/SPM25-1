@@ -19,7 +19,7 @@ func CreateRoom(creatorID string, roomId string, avatar string) *Uno.Room {
 	Waiting := Uno.Waiting
 	newRoom := &Uno.Room{
 		ID:      roomId,
-		Players: []*Uno.Player{{ID: creatorID}, {Avatar: avatar}},
+		Players: []*Uno.Player{{ID: creatorID, Avatar: avatar}},
 		Deck:    initializeDeck(),
 		Status:  Waiting,
 		Creator: creatorID,

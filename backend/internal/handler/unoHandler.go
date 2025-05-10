@@ -59,7 +59,6 @@ func HandleSpecialCardHandler(c *gin.Context) {
 	type Request struct {
 		RoomID string   `json:"room_id"`
 		Card   Uno.Card `json:"card"`
-		Choose string   `json:"choose"` // "accept" 或 "reject"
 	}
 	type Response struct {
 		Message string `json:"message"`
@@ -77,10 +76,30 @@ func HandleSpecialCardHandler(c *gin.Context) {
 		return
 	}
 
-	service.HandleSpecialCard(room, req.Card, req.Choose)
+	service.HandleSpecialCard(room, req.Card)
 	service.BroadcastToClients(req.RoomID)
 	c.JSON(http.StatusOK, Response{Message: "Card handled successfully"})
 }
+
+func HandleAcceptHandler(c *gin.Context) {
+	type Request struct {
+		RoomID string `json:"room_id"`
+	}
+	var req Request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		return
+	}
+
+	room, _ := service.GetRoom(req.RoomID)
+	if room == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+		return
+	}
+	service.HandleAcceptCard(room)
+	c.JSON(http.StatusOK, room)
+}
+
 func DrawCardHandler(c *gin.Context) {
 	type Request struct {
 		RoomID   string `json:"room_id"`
