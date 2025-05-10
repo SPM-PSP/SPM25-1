@@ -13,15 +13,16 @@ import (
 
 func CreateRoomHandler(c *gin.Context) {
 	type createRequest struct {
-		RoomID  string `json:"room_id"`
-		Creator string `json:"creator"`
+		RoomID  string     `json:"room_id"`
+		Creator Uno.Player `json:"creator"`
 	}
 	var req createRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
 		return
 	}
-	newRoom := service.CreateRoom(req.Creator, req.RoomID)
+	newRoom := service.CreateRoom(req.Creator.ID, req.RoomID)
+	//房主的web加入
 	c.JSON(http.StatusOK, gin.H{
 		"roomID": req.RoomID,
 		"room":   newRoom,
