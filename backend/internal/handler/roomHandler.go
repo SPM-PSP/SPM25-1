@@ -126,12 +126,12 @@ func JoinRoomHandler(c *gin.Context) {
 }
 
 func LeaveRoomHandler(c *gin.Context) {
-	type JoinRequest struct {
+	type Request struct {
 		RoomID string     `json:"room_id"`
 		Player Uno.Player `json:"player"`
 	}
 
-	var req JoinRequest
+	var req Request
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求格式"})
 		return

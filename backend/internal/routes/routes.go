@@ -72,6 +72,7 @@ func JoinRoomRoutes(router *gin.Engine) {
 	{
 		api.POST("/joinRoom", handler.JoinRoomHandler)
 		api.GET("/joinRoom", handler.WsHandler)
+		api.POST("/leaveRoom", handler.LeaveRoomHandler)
 	}
 }
 
@@ -89,7 +90,7 @@ func GetRoomByIdRoutes(router *gin.Engine) {
 	router.Use(middle.JWTAuth())
 	api := router.Group("/")
 	{
-		api.GET("/getRoomById", handler.GetRoomByIdRoomHandler)
+		api.POST("/getRoomById", handler.GetRoomByIdRoomHandler)
 	}
 }
 
@@ -136,5 +137,6 @@ func ValidateCardPlayRoutes(router *gin.Engine) {
 		api.POST("/checkCard", handler.ValidateCardPlayHandler)
 		api.POST("/handleSpecial", handler.HandleSpecialCardHandler)
 		api.POST("/draw", handler.DrawCardHandler)
+		api.POST("/accept", handler.HandleAcceptHandler)
 	}
 }

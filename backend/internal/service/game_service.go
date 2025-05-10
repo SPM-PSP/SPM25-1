@@ -21,18 +21,20 @@ func ValidateCardPlay(room *Uno.Room, playerIndex int, card Uno.Card) bool {
 	return card.Color == topCard.Color || card.Value == topCard.Value
 }
 
-func HandleSpecialCard(room *Uno.Room, card Uno.Card, choose string) {
-	//自己接受摸牌
-	if choose == "accept" {
-		err := DrawCards(room.Players[room.CurrentPlayerIndex], room.DrawCount, room)
-		room.DrawCount = 0
-		if err != nil {
-			return
-		}
+// 自己接受摸牌
+func HandleAcceptCard(room *Uno.Room) {
+	err := DrawCards(room.Players[room.CurrentPlayerIndex], room.DrawCount, room)
+	room.DrawCount = 0
+	if err != nil {
+		return
 	}
+}
+
+func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 	switch card.Type {
 	case "reverse":
 		reversePlayerOrder(room)
+		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
 	case "draw_two", "draw_four":
 		//计算抽牌累计
@@ -41,18 +43,46 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card, choose string) {
 		} else if card.Type == "draw_four" {
 			room.DrawCount += 4
 		}
+		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
 	case "number":
+		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
 	case "skip":
-		room.CurrentPlayerIndex = room.CurrentPlayerIndex%len(room.DiscardPile) + 1
+		room.CurrentPlayerIndex = room.CurrentPlayerIndex%len(room.Players) + 1
+		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
 	}
+	if room.Direction == Uno.Clockwise {
+		room.CurrentPlayerIndex += 1
+	}
+	if room.Direction == Uno.Anticlockwise {
+		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + len(room.Players) - 1) % len(room.DiscardPile)
+	}
+}
 
+// 移除房间内该回合出牌玩家所出手牌
+func RemoveHandCard(room *Uno.Room, card Uno.Card) {
+	removed := false
+	newHands := make([]Uno.Card, 0, len(room.Players[room.CurrentPlayerIndex].Hand))
+	for _, p := range room.Players[room.CurrentPlayerIndex].Hand {
+		if p != card {
+			newHands = append(newHands, p)
+		} else {
+			removed = true
+		}
+	}
+	room.Players[room.CurrentPlayerIndex].Hand = newHands
+
+	if !removed {
+		fmt.Print("error  玩家没有此手牌")
+		return
+	}
 }
 
 // 摸牌逻辑
 func DrawCards(player *Uno.Player, num int, room *Uno.Room) error {
+	//如果不够摸就重洗
 	if len(room.Deck) < num {
 		reshuffleDiscardPile(room)
 	}
