@@ -21,7 +21,7 @@ func CreateRoomHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
 		return
 	}
-	newRoom := service.CreateRoom(req.Creator.ID, req.RoomID)
+	newRoom := service.CreateRoom(req.Creator.ID, req.RoomID, req.Creator.Avatar)
 	//房主的web加入
 	c.JSON(http.StatusOK, gin.H{
 		"roomID": req.RoomID,
