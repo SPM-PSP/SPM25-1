@@ -3,11 +3,8 @@ package routes
 import (
 	"UnoBackend/internal/handler"
 	"UnoBackend/internal/middle"
-	"UnoBackend/internal/model/deepseek"
 	"UnoBackend/internal/service"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func RegisterChatRoutes(router *gin.Engine, chatHandler *service.ChatHandler) {
@@ -42,28 +39,7 @@ func RegisterUnoChatRoutes(router *gin.Engine) {
 	router.GET("/protected", func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "访问成功"})
 	})
-	router.POST("/Uno/chat", func(c *gin.Context) {
-		type Request struct {
-			Content string `json:"content"`
-		}
-
-		var req Request
-		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求格式"})
-			return
-		}
-		messages := []deepseek.ChatMessage{
-			{Role: "user", Content: fmt.Sprintf("%s", req.Content)},
-		}
-		//"你好！现在我需要你扮演猫娘来和我进行对话，具体表现为句末带上‘喵～’字样并且语言风格偏向可爱。"
-		response, err := service.GetDeepSeekChatCompletion(messages)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			return
-		}
-		c.JSON(200, gin.H{"message": response})
-		fmt.Println("Assistant:", response)
-	})
+	router.POST("/Uno/chat", handler.UnoChatHandler)
 }
 
 func JoinRoomRoutes(router *gin.Engine) {
