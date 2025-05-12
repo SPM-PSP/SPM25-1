@@ -49,7 +49,15 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
 	case "skip":
-		room.CurrentPlayerIndex = room.CurrentPlayerIndex%len(room.Players) + 1
+		if room.Direction == Uno.Clockwise {
+			room.CurrentPlayerIndex = (room.CurrentPlayerIndex + 1) % len(room.Players)
+		}
+		if room.Direction == Uno.Anticlockwise {
+			room.CurrentPlayerIndex = (room.CurrentPlayerIndex + len(room.Players) - 1) % len(room.Players)
+		}
+		RemoveHandCard(room, card)
+		room.DiscardPile = append(room.DiscardPile, card)
+	case "wild":
 		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
 	}
@@ -57,7 +65,7 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 		room.CurrentPlayerIndex += 1
 	}
 	if room.Direction == Uno.Anticlockwise {
-		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + len(room.Players) - 1) % len(room.DiscardPile)
+		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + len(room.Players) - 1) % len(room.Players)
 	}
 }
 

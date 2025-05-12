@@ -2,10 +2,13 @@ package handler
 
 import (
 	"UnoBackend/internal/model/Uno"
+	"UnoBackend/internal/model/deepseek"
 	"UnoBackend/internal/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/goccy/go-json"
 	"net/http"
+	"strings"
 )
 
 func StartUno(c *gin.Context) {
@@ -117,6 +120,7 @@ func DrawCardHandler(c *gin.Context) {
 	for _, player := range room.Players {
 		if player.ID == req.PlayerID {
 			err := service.DrawCards(player, req.Number, room)
+			room.CurrentPlayerIndex += 1
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "摸牌发生错误"})
 				return
@@ -125,4 +129,43 @@ func DrawCardHandler(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusOK, room)
+}
+
+func UnoChatHandler(c *gin.Context) {
+	type Request struct {
+		Content       string `json:"content"`
+		AiPlayerIndex int    `json:"ai_player_index"`
+		RoomId        string `json:"room_id"`
+	}
+
+	var req Request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求格式"})
+		return
+	}
+	room, _ := service.GetRoom(req.RoomId)
+	handJson, _ := json.MarshalIndent(room.Players[req.AiPlayerIndex].Hand, "", "    ")
+	cardJson, _ := json.MarshalIndent(room.DiscardPile[len(room.DiscardPile)-1], "", "    ")
+	message := fmt.Sprintf(
+		"现在你正在玩Uno游戏，允许+2后叠加+4，+4后依然可以无限制的叠加+4，若出wild和+4需要返回你所选定的color信息，不允许抢出，你的手牌是\"hand\": %s 现在场上的牌是 %s 你需要以JSON格式返回你要打出的牌,且仅仅返回json,如果你无法出牌，则返回空白的json",
+		string(handJson), string(cardJson),
+	)
+	messages := []deepseek.ChatMessage{
+		{Role: "user", Content: fmt.Sprintf("%s", message)},
+	}
+	//"你好！现在我需要你扮演猫娘来和我进行对话，具体表现为句末带上‘喵～’字样并且语言风格偏向可爱。"
+	response, err := service.GetDeepSeekChatCompletion(messages)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	cleaned := strings.TrimPrefix(response, "```json\n")
+	cleaned = strings.TrimSuffix(cleaned, "\n```")
+	var AiCard Uno.Card
+	err1 := json.Unmarshal([]byte(cleaned), &AiCard)
+	if err1 != nil {
+		panic(err1)
+	}
+	c.JSON(200, AiCard)
+	fmt.Println("Assistant:", response)
 }
