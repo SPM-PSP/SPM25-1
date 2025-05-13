@@ -29,5 +29,30 @@ func Login(c *gin.Context) {
 	}
 
 	token, _ := middle.GenerateToken(user.Username)
-	c.JSON(http.StatusOK, gin.H{"token": token})
+
+	c.JSON(http.StatusOK, gin.H{
+		"token":    token,
+		"id":       user.ID,
+		"username": user.Username})
+}
+
+func GetUserByUsername(c *gin.Context) {
+	var user model.User
+	var input model.User
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误"})
+		return
+	}
+
+	if err := DB.DB.Where("username = ?", input.Username).First(&user).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "用户不存在"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"id":        user.ID,
+		"username":  user.Username,
+		"creatTime": user.CreatedAt,
+		"updatedAt": user.UpdatedAt,
+	})
 }
