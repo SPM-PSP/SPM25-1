@@ -62,7 +62,7 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 		room.DiscardPile = append(room.DiscardPile, card)
 	}
 	if room.Direction == Uno.Clockwise {
-		room.CurrentPlayerIndex += 1
+		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + 1) % len(room.Players)
 	}
 	if room.Direction == Uno.Anticlockwise {
 		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + len(room.Players) - 1) % len(room.Players)
