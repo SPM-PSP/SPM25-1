@@ -67,6 +67,7 @@ func GetRoomByIdRoutes(router *gin.Engine) {
 	api := router.Group("/")
 	{
 		api.POST("/getRoomById", handler.GetRoomByIdRoomHandler)
+		api.GET("/getUserByUsername", handler.GetUserByUsername)
 	}
 }
 
