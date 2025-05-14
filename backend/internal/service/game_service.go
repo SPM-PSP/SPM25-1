@@ -49,13 +49,13 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
 	case "skip":
+		RemoveHandCard(room, card)
 		if room.Direction == Uno.Clockwise {
 			room.CurrentPlayerIndex = (room.CurrentPlayerIndex + 1) % len(room.Players)
 		}
 		if room.Direction == Uno.Anticlockwise {
 			room.CurrentPlayerIndex = (room.CurrentPlayerIndex + len(room.Players) - 1) % len(room.Players)
 		}
-		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
 	case "wild":
 		RemoveHandCard(room, card)
@@ -161,7 +161,6 @@ func StartSuopGame(room *Uno.Room, id int, handler *ChatHandler) {
 
 	// 创建会话
 	session := handler.NewASession()
-
 	// 构造自定义对话内容，例如从 suopData 生成一个问题
 	message := fmt.Sprintf("现在你是海龟汤推理游戏的主持人，你要根据我接下来的提问与汤底进行比对，你只能回答是,不是,不重要,可能；四种回答，以下是汤底：%s", suopData.Content)
 

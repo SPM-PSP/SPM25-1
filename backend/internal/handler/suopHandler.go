@@ -73,10 +73,52 @@ func GetSuop(c *gin.Context) {
 	c.JSON(http.StatusOK, suopData)
 }
 
+func ContinueChat(c *gin.Context) {
+	type ChatRequest struct {
+		RoomID  string `json:"room_id"`
+		Message string `json:"message"`
+	}
+
+	var req ChatRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请求格式错误"})
+		return
+	}
+
+	// 获取房间
+	room, _ := service.GetRoom(req.RoomID)
+	if room == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "房间未找到"})
+		return
+	}
+
+	// 获取已有 session
+	cfg := config.Load()
+	handler := service.NewChatHandler("sk-09e51faee39f4a9a9358dbd732868b1f", cfg.APITimeout)
+
+	// 这里从 handler.store.sessions 中找回旧 session
+	session := handler.GetSessionByID(room.Session)
+	if session == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "会话未找到"})
+		return
+	}
+
+	// 发送消息
+	reply, err := handler.SendAMessage(session, req.Message)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "AI 回复失败"})
+		return
+	}
+
+	room.Message = reply
+	c.JSON(http.StatusOK, gin.H{"reply": reply})
+}
+
 func StartSuop(c *gin.Context) {
 	type startSRequest struct {
-		RoomID string `json:"room_id"`
-		SuopID int    `json:"suop_id"`
+		RoomID  string `json:"room_id"`
+		SuopID  int    `json:"suop_id"`
+		Session string `json:"session"`
 	}
 	var req startSRequest
 	var suopData suop.Suop

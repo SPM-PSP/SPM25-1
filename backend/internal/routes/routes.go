@@ -98,12 +98,13 @@ func StartUnoRoutes(router *gin.Engine) {
 	}
 }
 
-func StartSuopRoutes(router *gin.Engine) {
+func StartSuopRoutes(router *gin.Engine, chatHandler *service.ChatHandler) {
 	router.Use(middle.CORS())
 	router.Use(middle.JWTAuth())
 	api := router.Group("/")
 	{
-		api.POST("/StartSuop", handler.StartSuop)
+		api.POST("/StartSuop", chatHandler.StartSuop)
+		api.POST("/continueChat", chatHandler.ContinueChat)
 	}
 }
 
