@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 	cfg := config.Load()
 	fmt.Println("Assistant:", cfg.DeepSeekAPIKey)
 	chatHandler := service.NewChatHandler(
@@ -29,7 +28,7 @@ func main() {
 	routes.CreateSuopRoutes(r)
 	routes.CreateRoomRoutes(r)
 	routes.GetRoomByIdRoutes(r)
-	routes.StartSuopRoutes(r)
+	routes.StartSuopRoutes(r, chatHandler)
 	routes.StartUnoRoutes(r)
 	routes.ValidateCardPlayRoutes(r)
 	//test

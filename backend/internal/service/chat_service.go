@@ -1,7 +1,9 @@
 package service
 
 import (
+	"UnoBackend/DB"
 	"UnoBackend/internal/model/deepseek"
+	"UnoBackend/internal/model/suop"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -44,6 +46,7 @@ func (h *ChatHandler) CreateSession(c *gin.Context) {
 		"created_at": session.CreatedAt.Format(time.RFC3339),
 		"api_key":    h.apiKey,
 	})
+
 }
 
 func (h *ChatHandler) HandleChat(c *gin.Context) {
@@ -159,4 +162,73 @@ func (h *ChatHandler) SendAMessage(session *deepseek.ChatSession, message string
 	session.LastActive = time.Now()
 
 	return response, nil
+}
+
+func (h *ChatHandler) GetSessionByID(id string) *deepseek.ChatSession {
+	h.store.Lock()
+	defer h.store.Unlock()
+	return h.store.sessions[id]
+}
+
+func (h *ChatHandler) ContinueChat(c *gin.Context) {
+	type ChatRequest struct {
+		RoomID  string `json:"room_id"`
+		Message string `json:"message"`
+	}
+
+	var req ChatRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "请求格式错误"})
+		return
+	}
+
+	// 获取房间
+	room, _ := GetRoom(req.RoomID)
+	if room == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "房间未找到"})
+		return
+	}
+
+	// 这里从 handler.store.sessions 中找回旧 session
+	session := h.GetSessionByID(room.Session)
+	if session == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "会话未找到"})
+		return
+	}
+
+	// 发送消息
+	reply, err := h.SendAMessage(session, req.Message)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "AI 回复失败"})
+		return
+	}
+
+	room.Message = reply
+	c.JSON(http.StatusOK, gin.H{"reply": reply})
+}
+
+func (h *ChatHandler) StartSuop(c *gin.Context) {
+	type startSRequest struct {
+		RoomID  string `json:"room_id"`
+		SuopID  int    `json:"suop_id"`
+		Session string `json:"session"`
+	}
+	var req startSRequest
+	var suopData suop.Suop
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求格式"})
+		return
+	}
+	fmt.Println("ROOMID:" + req.RoomID)
+	room, _ := GetRoom(req.RoomID)
+	if room == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "房间未找到"})
+		return
+	}
+	if err := DB.DB.Find(&suopData, req.SuopID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "汤面未找到"})
+		return
+	}
+	StartSuopGame(room, req.SuopID, h)
+	c.JSON(http.StatusOK, room)
 }
