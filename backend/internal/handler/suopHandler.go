@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 func GetAllSuops(c *gin.Context) {
@@ -25,6 +26,8 @@ func CreateSuop(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	formattedTime := time.Now().Format("2006-01-02 15:04:05")
+	newSuop.CreatedAt = formattedTime
 	if err := DB.DB.Create(&newSuop).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
