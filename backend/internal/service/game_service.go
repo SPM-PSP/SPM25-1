@@ -71,6 +71,9 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 
 // 移除房间内该回合出牌玩家所出手牌
 func RemoveHandCard(room *Uno.Room, card Uno.Card) {
+	if card.Type == "wild" {
+		card.Color = ""
+	}
 	removed := false
 	newHands := make([]Uno.Card, 0, len(room.Players[room.CurrentPlayerIndex].Hand))
 	for _, p := range room.Players[room.CurrentPlayerIndex].Hand {
