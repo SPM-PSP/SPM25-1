@@ -120,7 +120,12 @@ func DrawCardHandler(c *gin.Context) {
 	for _, player := range room.Players {
 		if player.ID == req.PlayerID {
 			err := service.DrawCards(player, req.Number, room)
-			room.CurrentPlayerIndex = (room.CurrentPlayerIndex + 1) % len(room.Players)
+			if room.Direction == Uno.Clockwise {
+				room.CurrentPlayerIndex = (room.CurrentPlayerIndex + 1) % len(room.Players)
+			}
+			if room.Direction == Uno.Anticlockwise {
+				room.CurrentPlayerIndex = (room.CurrentPlayerIndex + len(room.Players) - 1) % len(room.Players)
+			}
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "摸牌发生错误"})
 				return
