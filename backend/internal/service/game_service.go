@@ -36,9 +36,9 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 		reversePlayerOrder(room)
 		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
-	case "wild_draw_two", "wild_draw_four":
+	case "draw_two", "wild_draw_four":
 		//计算抽牌累计
-		if card.Type == "wild_draw_two" {
+		if card.Type == "draw_two" {
 			room.DrawCount += 2
 		} else if card.Type == "wild_draw_four" {
 			room.DrawCount += 4
