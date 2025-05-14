@@ -71,6 +71,10 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 
 // 移除房间内该回合出牌玩家所出手牌
 func RemoveHandCard(room *Uno.Room, card Uno.Card) {
+	if card.Type == "wild" {
+		card.Color = ""
+	}
+	fmt.Print(card)
 	removed := false
 	newHands := make([]Uno.Card, 0, len(room.Players[room.CurrentPlayerIndex].Hand))
 	for _, p := range room.Players[room.CurrentPlayerIndex].Hand {
@@ -162,7 +166,7 @@ func StartSuopGame(room *Uno.Room, id int, handler *ChatHandler) {
 	// 创建会话
 	session := handler.NewASession()
 	// 构造自定义对话内容，例如从 suopData 生成一个问题
-	message := fmt.Sprintf("现在你是海龟汤推理游戏的主持人，你要根据我接下来的提问与汤底进行比对，你只能回答是,不是,不重要,可能；四种回答，以下是汤底：%s", suopData.Content)
+	message := fmt.Sprintf("现在你需要扮演猫娘，具体表现为句带末喵～语气可爱。现在你是海龟汤推理游戏的主持人，你要根据我接下来的提问与汤底进行比对，你只能回答是,不是,不重要,可能；四种回答，当我选择复述故事并且已经正确猜到游戏汤底大部分内容后请告诉我汤底故事并且提示我游戏完成，以下是汤底：%s", suopData.Content)
 
 	// 调用对话接口
 	response, err := handler.SendAMessage(session, message)
