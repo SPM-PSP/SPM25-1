@@ -57,6 +57,7 @@ func GetAllSuopsRoutes(router *gin.Engine) {
 	router.Use(middle.JWTAuth())
 	api := router.Group("/")
 	{
+		api.GET("/getSuop", handler.GetSuop)
 		api.GET("/getAllSuop", handler.GetAllSuops)
 	}
 }
