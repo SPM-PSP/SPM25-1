@@ -11,14 +11,19 @@ import (
 
 func ValidateCardPlay(room *Uno.Room, playerIndex int, card Uno.Card) bool {
 	topCard := room.DiscardPile[len(room.DiscardPile)-1]
-
-	// 万能牌始终合法
-	if card.Type == "wild" || card.Type == "wild_draw_four" {
-		return true
+	if room.DrawCount != 0 {
+		if card.Type == topCard.Type || card.Type == "wild_draw_four" {
+			return true
+		}
 	}
-
-	// 颜色或数值匹配
-	return card.Color == topCard.Color || card.Value == topCard.Value
+	if room.DrawCount == 0 {
+		// 万能牌始终合法
+		if card.Type == "wild" || card.Type == "wild_draw_four" {
+			return true
+		}
+		// 颜色或数值匹配
+		return card.Color == topCard.Color || card.Value == topCard.Value
+	}
 }
 
 // 自己接受摸牌
