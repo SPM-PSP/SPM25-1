@@ -67,9 +67,17 @@ func DeleteSuop(c *gin.Context) {
 }
 
 func GetSuop(c *gin.Context) {
-	id := c.Param("id")
+	type Request struct {
+		sid int `json:"sid"`
+	}
+
+	var req Request
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的请求格式"})
+		return
+	}
 	var suopData suop.Suop
-	if err := DB.DB.Find(&suopData, id).Error; err != nil {
+	if err := DB.DB.Find(&suopData, req.sid).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "汤面未找到"})
 		return
 	}
