@@ -68,7 +68,7 @@ func DeleteSuop(c *gin.Context) {
 
 func GetSuop(c *gin.Context) {
 	type Request struct {
-		sid int `json:"sid"`
+		ID int `json:"sid"`
 	}
 
 	var req Request
@@ -77,7 +77,7 @@ func GetSuop(c *gin.Context) {
 		return
 	}
 	var suopData suop.Suop
-	if err := DB.DB.Find(&suopData, req.sid).Error; err != nil {
+	if err := DB.DB.Find(&suopData, req.ID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "汤面未找到"})
 		return
 	}
