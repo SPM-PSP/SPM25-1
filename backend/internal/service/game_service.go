@@ -24,6 +24,7 @@ func ValidateCardPlay(room *Uno.Room, playerIndex int, card Uno.Card) bool {
 		// 颜色或数值匹配
 		return card.Color == topCard.Color || card.Value == topCard.Value
 	}
+	return card.Color == topCard.Color || card.Value == topCard.Value
 }
 
 // 自己接受摸牌
