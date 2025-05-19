@@ -10,4 +10,5 @@ type Player struct {
 	Hand   []Card          `json:"hand"`
 	Type   string          `json:"type"`
 	Avatar string          `json:"avatar"`
+	Pre    Card            `json:"pre"`
 }
