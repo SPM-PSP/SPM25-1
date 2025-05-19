@@ -47,6 +47,7 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 		if card.Type == "draw_two" {
 			room.DrawCount += 2
 		} else if card.Type == "wild_draw_four" {
+			card.Color = ""
 			room.DrawCount += 4
 		}
 		RemoveHandCard(room, card)
