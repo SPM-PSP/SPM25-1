@@ -94,17 +94,17 @@ func HandleAcceptHandler(c *gin.Context) {
 		return
 	}
 	room, _ := service.GetRoom(req.RoomID)
+	if room == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+		return
+	}
+	service.HandleAcceptCard(room)
 	if room.Direction == Uno.Clockwise {
 		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + 1) % len(room.Players)
 	}
 	if room.Direction == Uno.Anticlockwise {
 		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + len(room.Players) - 1) % len(room.Players)
 	}
-	if room == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
-		return
-	}
-	service.HandleAcceptCard(room)
 	c.JSON(http.StatusOK, room)
 }
 
