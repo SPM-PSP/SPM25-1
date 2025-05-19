@@ -180,7 +180,7 @@ func StartSuopGame(room *Uno.Room, id int, handler *ChatHandler) {
 	// 创建会话
 	session := handler.NewASession()
 	// 构造自定义对话内容，例如从 suopData 生成一个问题
-	message := fmt.Sprintf("现在你需要扮演猫娘，具体表现为句带末喵～语气可爱。现在你是海龟汤推理游戏的主持人，你要根据我接下来的提问与汤底进行比对，你只能回答是,不是,不重要,可能；四种回答，当我选择复述故事并且已经正确猜到游戏汤底大部分内容后请告诉我汤底故事并且提示我游戏完成，以下是汤底：%s", suopData.Content)
+	message := fmt.Sprintf("现在你是海龟汤推理游戏的主持人，你要根据我接下来的提问与汤底进行比对，你需要严格执行以下内容，你仅仅可以回答是,不是,不重要,可能，四种回答。只有当我选择复述故事并且已经正确猜到游戏汤底大部分内容后请告诉我汤底故事并且提示我游戏完成，以下是汤底：%s", suopData.Content)
 
 	// 调用对话接口
 	response, err := handler.SendAMessage(session, message)
