@@ -68,6 +68,7 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
 	}
+	room.Players[room.CurrentPlayerIndex].Pre = card
 	if room.Direction == Uno.Clockwise {
 		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + 1) % len(room.Players)
 	}
@@ -109,7 +110,7 @@ func DrawCards(player *Uno.Player, num int, room *Uno.Room) error {
 	cards := room.Deck[len(room.Deck)-num:]
 	player.Hand = append(player.Hand, cards...)
 	room.Deck = room.Deck[:len(room.Deck)-num]
-
+	player.Pre.Type = "drown"
 	return nil
 }
 
