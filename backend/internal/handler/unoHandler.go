@@ -93,8 +93,13 @@ func HandleAcceptHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
-
 	room, _ := service.GetRoom(req.RoomID)
+	if room.Direction == Uno.Clockwise {
+		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + 1) % len(room.Players)
+	}
+	if room.Direction == Uno.Anticlockwise {
+		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + len(room.Players) - 1) % len(room.Players)
+	}
 	if room == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
 		return
@@ -152,9 +157,10 @@ func UnoChatHandler(c *gin.Context) {
 	handJson, _ := json.MarshalIndent(room.Players[req.AiPlayerIndex].Hand, "", "    ")
 	cardJson, _ := json.MarshalIndent(room.DiscardPile[len(room.DiscardPile)-1], "", "    ")
 	message := fmt.Sprintf(
-		"现在你正在玩Uno游戏，允许+2后叠加+4，+4后依然可以无限制的叠加+4，若出wild和+4需要返回你所选定的color信息，如果惩罚值为0你可以仅仅凭借颜色进行出牌，不允许抢出，你的手牌是\"hand\": %s 现在场上的牌是 %s 惩罚值为 %d 你需要以JSON格式返回你要打出的牌,且仅仅返回json,如果你无法出牌，则返回空白的json",
+		"现在你正在玩Uno游戏，允许+2后叠加+4，+4后依然可以无限制的叠加+4，若出wild和+4需要返回你所选定的color信息，如果惩罚值为0你可以仅仅凭借颜色进行出牌,如果惩罚值不为0，则只能出+4，不允许抢出，你的手牌是\"hand\": %s 现在场上的牌是 %s 惩罚值为 %d 你需要以JSON格式返回你要打出的牌,且仅仅返回json,如果你无法出牌，则返回空白的json",
 		string(handJson), string(cardJson), room.DrawCount,
 	)
+	fmt.Println(message)
 	messages := []deepseek.ChatMessage{
 		{Role: "user", Content: fmt.Sprintf("%s", message)},
 	}
