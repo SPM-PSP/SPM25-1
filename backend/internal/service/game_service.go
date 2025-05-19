@@ -29,6 +29,9 @@ func ValidateCardPlay(room *Uno.Room, playerIndex int, card Uno.Card) bool {
 
 // 自己接受摸牌
 func HandleAcceptCard(room *Uno.Room) {
+	if room.DrawCount == 0 {
+		DrawCards(room.Players[room.CurrentPlayerIndex], 1, room)
+	}
 	err := DrawCards(room.Players[room.CurrentPlayerIndex], room.DrawCount, room)
 	room.DrawCount = 0
 	if err != nil {
@@ -37,6 +40,7 @@ func HandleAcceptCard(room *Uno.Room) {
 }
 
 func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
+	room.Players[room.CurrentPlayerIndex].Pre = card
 	switch card.Type {
 	case "reverse":
 		reversePlayerOrder(room)
@@ -47,16 +51,18 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 		if card.Type == "draw_two" {
 			room.DrawCount += 2
 		} else if card.Type == "wild_draw_four" {
-			card.Color = ""
 			room.DrawCount += 4
 		}
 		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
+
 	case "number":
 		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
+
 	case "skip":
 		RemoveHandCard(room, card)
+
 		if room.Direction == Uno.Clockwise {
 			room.CurrentPlayerIndex = (room.CurrentPlayerIndex + 1) % len(room.Players)
 		}
@@ -68,7 +74,7 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 		RemoveHandCard(room, card)
 		room.DiscardPile = append(room.DiscardPile, card)
 	}
-	room.Players[room.CurrentPlayerIndex].Pre = card
+
 	if room.Direction == Uno.Clockwise {
 		room.CurrentPlayerIndex = (room.CurrentPlayerIndex + 1) % len(room.Players)
 	}
@@ -79,7 +85,7 @@ func HandleSpecialCard(room *Uno.Room, card Uno.Card) {
 
 // 移除房间内该回合出牌玩家所出手牌
 func RemoveHandCard(room *Uno.Room, card Uno.Card) {
-	if card.Type == "wild" {
+	if card.Type == "wild" || card.Type == "wild_draw_four" {
 		card.Color = ""
 	}
 	fmt.Print(card)
