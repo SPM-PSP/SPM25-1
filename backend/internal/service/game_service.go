@@ -11,12 +11,16 @@ import (
 
 func ValidateCardPlay(room *Uno.Room, playerIndex int, card Uno.Card) bool {
 	topCard := room.DiscardPile[len(room.DiscardPile)-1]
+	fmt.Println(card)
+	fmt.Println(topCard)
 	if room.DrawCount != 0 {
 		if card.Type == topCard.Type || card.Type == "wild_draw_four" {
+			fmt.Println("有惩罚的通过")
 			return true
 		}
 	}
 	if room.DrawCount == 0 {
+		fmt.Println("无惩罚")
 		// 万能牌始终合法
 		if card.Type == "wild" || card.Type == "wild_draw_four" {
 			return true
@@ -24,7 +28,7 @@ func ValidateCardPlay(room *Uno.Room, playerIndex int, card Uno.Card) bool {
 		// 颜色或数值匹配
 		return card.Color == topCard.Color || card.Value == topCard.Value
 	}
-	return card.Color == topCard.Color || card.Value == topCard.Value
+	return false
 }
 
 // 自己接受摸牌
@@ -92,11 +96,11 @@ func RemoveHandCard(room *Uno.Room, card Uno.Card) {
 	removed := false
 	newHands := make([]Uno.Card, 0, len(room.Players[room.CurrentPlayerIndex].Hand))
 	for _, p := range room.Players[room.CurrentPlayerIndex].Hand {
-		if p != card {
-			newHands = append(newHands, p)
-		} else {
-			removed = true
+		if !removed && p == card {
+			removed = true // 只删除第一次匹配到的牌
+			continue
 		}
+		newHands = append(newHands, p)
 	}
 	room.Players[room.CurrentPlayerIndex].Hand = newHands
 
@@ -164,6 +168,9 @@ func StartUnoGame(room *Uno.Room) {
 	for i := range room.Players {
 		DrawCards(room.Players[i], 4, room)
 	}
+	if room.Deck[0].Color == "" {
+		room.Deck[0].Color = Uno.Red
+	}
 	room.DiscardPile = append(room.DiscardPile, room.Deck[0])
 	room.Status = Uno.Playing
 	room.Direction = Uno.Clockwise
@@ -176,7 +183,6 @@ func StartSuopGame(room *Uno.Room, id int, handler *ChatHandler) {
 		fmt.Println("error: 汤面未找到")
 		return
 	}
-
 	// 创建会话
 	session := handler.NewASession()
 	// 构造自定义对话内容，例如从 suopData 生成一个问题
