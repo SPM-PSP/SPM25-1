@@ -16,6 +16,8 @@ func main() {
 		"sk-09e51faee39f4a9a9358dbd732868b1f",
 		cfg.APITimeout,
 	)
+	config.LoadConfig("config.yaml") // 从当前目录读取配置
+	serverConfig := config.AppConfig1.Server
 
 	r := gin.Default()
 
@@ -40,5 +42,5 @@ func main() {
 	// 需要 JWT 保护的接口
 	routes.RegisterUnoChatRoutes(r)
 	routes.RegisterChatRoutes(r, chatHandler)
-	r.Run(":8080")
+	r.Run(":" + serverConfig.Port)
 }

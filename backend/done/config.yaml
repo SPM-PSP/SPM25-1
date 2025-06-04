@@ -1,0 +1,9 @@
+server:
+  port: 8080
+
+database:
+  host: 119.84.246.217
+  port: 38158
+  user: root
+  password: qweasd
+  dbname: table_game
